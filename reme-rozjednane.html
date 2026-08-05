@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moje Stavba — Rozjednané zakázky</title>
+<link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0a0a0a; --bg-panel:#101010; --bg-panel-2:#141414;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.22);
+    --orange:#e08a42; --orange-glow:rgba(224,138,66,.28);
+    --blue:#5aa3d8; --blue-glow:rgba(90,163,216,.24);
+    --text-main:#f6f3ee; --muted:#9c968d; --muted-2:#645f57;
+    --r-lg:0px; --r-md:0px; --r-btn:0px;
+    --font-head:'Space Grotesk',sans-serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg-deep);color:var(--text-main);font-family:var(--font-body); overflow-x:hidden; max-width:100vw;}
+  a{color:inherit;text-decoration:none;}
+  svg{display:block;}
+
+  .layout{ display:flex; width:100%; max-width:100vw; }
+  .main{ flex:1; min-width:0; max-width:100%; }
+  .sidebar{ display:none; }
+  .topbar{ position:sticky; top:0; z-index:30; background:rgba(10,10,10,.95); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .topbar-inner{ display:flex; align-items:center; justify-content:space-between; padding:12px 20px; gap:14px; }
+  .logo{ display:flex; align-items:center; gap:8px; }
+  .logo-mark{ width:20px; height:20px; }
+  .logo-mark path{ stroke:var(--orange); stroke-width:1.6; fill:none; }
+  .logo-text{ font-family:var(--font-head); font-weight:700; font-size:14px; }
+  .topbar-links{ display:none; gap:4px; flex:1; }
+  .topbar-links a{ font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; padding:8px 12px; color:var(--muted); }
+  .topbar-links a.active{ color:var(--orange); }
+  .topbar-right{ display:flex; align-items:center; gap:10px; }
+  .avatar-btn{ width:30px; height:30px; border:1.5px solid var(--orange); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11px; color:var(--orange); flex:none; }
+  .burger{ width:32px; height:32px; border:1px solid var(--line-strong); background:transparent; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; }
+  .burger span{ width:14px; height:1.5px; background:var(--text-main); }
+
+  .site-menu-overlay{ position:fixed; inset:0; background:var(--bg-deep); z-index:50; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:.2s ease; }
+  .site-menu-overlay.open{ opacity:1; pointer-events:auto; }
+  .site-menu-links{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; padding:0 20px; }
+  .site-menu-links a{ font-family:var(--font-head); font-size:24px; font-weight:600; padding:12px 0; border-bottom:1px solid var(--line); color:var(--muted); }
+  .site-menu-links a.active{ color:var(--orange); }
+
+  /* ===== CONTEXT NAV — changes per section ===== */
+  .project-row{ display:flex; align-items:center; gap:10px; padding:14px 20px 0; flex-wrap:wrap; }
+  .project-switcher{ position:relative; }
+  .project-name{ font-family:var(--font-head); font-weight:700; font-size:17px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .project-name svg{ width:13px; height:13px; stroke:var(--muted); transition:transform .15s ease; }
+  .project-switcher.open .project-name svg{ transform:rotate(180deg); }
+  .switcher-panel{ display:none; position:absolute; top:calc(100% + 8px); left:0; min-width:220px; background:var(--bg-panel); border:1.5px solid var(--line-strong); z-index:35; }
+  .project-switcher.open .switcher-panel{ display:block; }
+  .switcher-panel a{ display:flex; align-items:center; justify-content:space-between; padding:11px 14px; font-size:13px; border-bottom:1px solid var(--line); color:var(--text-main); }
+  .switcher-panel a.current{ color:var(--orange); }
+  .switcher-panel a.current::after{ content:"\25CF"; font-size:8px; }
+  .switcher-panel a.add{ color:var(--muted); font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; border-bottom:none; }
+  .context-label{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); padding:14px 20px 0; }
+
+  .context-bar{ position:sticky; top:53px; z-index:25; background:var(--bg-deep); border-bottom:1px solid var(--line); display:flex; overflow-x:auto; gap:6px; padding:12px 20px; scrollbar-width:none; margin-top:10px; }
+  .context-bar::-webkit-scrollbar{ display:none; }
+  .context-bar a{ flex:none; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.04em; padding:8px 13px; border:1px solid var(--line-strong); color:var(--muted); white-space:nowrap; }
+  .context-bar a.active{ color:var(--orange); border-color:var(--orange); background:rgba(224,138,66,.08); }
+
+  .wrap{ padding:0 20px 60px; }
+  .back-btn{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-main); padding:9px 14px; margin:14px 0 6px; border:1.5px solid var(--line-strong); }
+  .back-btn:hover{ border-color:var(--orange); color:var(--orange); }
+  .back-btn:hover{ color:var(--orange); }
+  section{ padding-top:0; }
+
+  :root{ --orange:#c1553f; --orange-glow:rgba(193,85,63,.28); }
+
+  .context-label{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); padding:14px 20px 0; }
+  .context-bar{ position:sticky; top:53px; z-index:25; background:var(--bg-deep); border-bottom:1px solid var(--line); display:flex; overflow-x:auto; gap:6px; padding:10px 20px; scrollbar-width:none; margin-top:6px; }
+  .context-bar::-webkit-scrollbar{ display:none; }
+  .context-bar a{ flex:none; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.04em; padding:8px 13px; border:1px solid var(--line-strong); color:var(--muted); white-space:nowrap; }
+  .context-bar a.active{ color:var(--orange); border-color:var(--orange); background:rgba(193,85,63,.08); }
+  .back-btn{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-main); padding:9px 14px; margin:14px 0 6px; border:1.5px solid var(--line-strong); }
+  .back-btn:hover{ border-color:var(--orange); color:var(--orange); }
+
+  h1.pt{ font-family:var(--font-head); font-size:20px; margin:16px 0 16px; }
+  .job-row{ display:block; border:1.5px solid var(--orange); box-shadow:0 0 18px var(--orange-glow); padding:15px 16px; margin-bottom:10px; color:inherit; text-decoration:none; }
+  .job-row.muted{ border-color:var(--line-strong); box-shadow:none; }
+  .job-row .jt{ font-family:var(--font-head); font-size:14px; margin-bottom:4px; }
+  .job-row .jm{ font-size:11.5px; color:var(--muted); }
+  .empty-note{ font-family:var(--font-mono); font-size:11px; color:var(--muted-2); text-align:center; padding:26px 0; }
+
+
+  @media (min-width: 900px){
+    .topbar-links{ display:flex; }
+    .burger{ display:none; }
+    .context-bar{ display:none; }
+    .project-row{ padding:0; margin-bottom:4px; }
+    .context-label{ padding:0; margin-bottom:14px; }
+    .layout{ display:flex; }
+    .sidebar{ display:block; width:220px; flex:none; border-right:1px solid var(--line); position:sticky; top:53px; height:calc(100vh - 53px); padding:24px 16px; }
+    .sidebar nav{ display:flex; flex-direction:column; gap:2px; }
+    .sidebar nav a{ display:flex; align-items:center; gap:10px; padding:10px 12px; font-size:13px; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.03em; font-size:11.5px; }
+    .sidebar nav a.active{ color:var(--orange); background:rgba(224,138,66,.08); border:1px solid rgba(224,138,66,.3); }
+    .sidebar nav a:not(.active):hover{ color:var(--text-main); background:var(--line); }
+    .main{ flex:1; min-width:0; }
+    .wrap{ max-width:760px; padding:32px 40px 60px; }
+    
+    .context-bar{ display:none; }
+    .layout{ display:flex; }
+    .sidebar{ display:block; width:220px; flex:none; border-right:1px solid var(--line); position:sticky; top:53px; height:calc(100vh - 53px); padding:24px 16px; }
+    .sidebar nav{ display:flex; flex-direction:column; gap:2px; }
+    .sidebar nav a{ display:flex; align-items:center; padding:10px 12px; font-size:11.5px; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.03em; }
+    .sidebar nav a.active{ color:var(--orange); background:rgba(193,85,63,.08); border:1px solid rgba(193,85,63,.3); }
+    .main{ flex:1; min-width:0; }
+
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" href="reme-dashboard.html">
+      <svg class="logo-mark" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M6 10.5V20h12v-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">Moje Stavba</span>
+    </a>
+    <nav class="topbar-links">
+      <a href="reme-dashboard.html" class="">Dashboard</a>
+      <a href="#">Marketplace</a>
+      <a href="reme-kontakty.html">Kontakty</a>
+    </nav>
+    <div class="topbar-right">
+      <a class="avatar-btn" href="reme-profil.html">JN</a>
+      <button class="burger" onclick="toggleSiteMenu(true)"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="site-menu-overlay" id="siteMenuOverlay">
+  <div class="topbar-inner">
+    <a class="logo" href="reme-dashboard.html">
+      <svg class="logo-mark" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M6 10.5V20h12v-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">Moje Stavba</span>
+    </a>
+    <button class="burger" onclick="toggleSiteMenu(false)">✕</button>
+  </div>
+  <div class="site-menu-links">
+    <a href="reme-dashboard.html" class="" onclick="toggleSiteMenu(false)">Dashboard</a>
+    <a href="#" onclick="toggleSiteMenu(false)">Marketplace</a>
+    <a href="reme-kontakty.html" onclick="toggleSiteMenu(false)">Kontakty</a>
+    <a href="reme-profil.html" class="" onclick="toggleSiteMenu(false)">Profil</a>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <nav>
+      <a href="reme-rozjednane.html" class="active">Rozjednané zakázky</a>
+        <a href="reme-hotove.html">Hotové zakázky</a>
+        <a href="reme-oslovene.html">Oslovené poptávky</a>
+    </nav>
+  </aside>
+  <div class="main">
+    <div class="context-bar">
+      <a href="reme-rozjednane.html" class="active">Rozjednané zakázky</a>
+      <a href="reme-hotove.html">Hotové zakázky</a>
+      <a href="reme-oslovene.html">Oslovené poptávky</a>
+    </div>
+    <div class="wrap">
+      <a href="javascript:history.back()" class="back-btn">← Zpět</a>
+
+      <h1 class="pt">Rozjednané zakázky</h1>
+      <a class="job-row" href="reme-zakazka-detail.html">
+        <div class="jt">Javůrkovi — Sádrokartonářské práce</div>
+        <div class="jm">Malé Březno · Hrubá stavba · 42 000 Kč · zahájeno 12. 8. 2026</div>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleSiteMenu(open){
+    document.getElementById('siteMenuOverlay').classList.toggle('open', open);
+  }
+  
+</script>
+</body>
+</html>

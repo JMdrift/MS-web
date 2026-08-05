@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moje Stavba — Založit profil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0a0a0a; --bg-panel:#101010; --bg-panel-2:#141414;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.22);
+    --orange:#e08a42; --orange-glow:rgba(224,138,66,.28);
+    --blue:#5aa3d8;
+    --text-main:#f6f3ee; --muted:#9c968d; --muted-2:#645f57;
+    --r-lg:7px; --r-md:5px; --r-btn:4px;
+    --font-head:'Space Grotesk',sans-serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg-deep);color:var(--text-main);font-family:var(--font-body);min-height:100%;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{padding:0 20px; max-width:460px; margin:0 auto;}
+  svg{display:block;}
+
+  header{ display:flex; align-items:center; justify-content:space-between; padding:18px 0; }
+  .logo{ display:flex; align-items:center; gap:8px; }
+  .logo-mark{ width:22px; height:22px; }
+  .logo-mark path{ stroke:var(--orange); stroke-width:1.6; fill:none; transition:stroke .3s ease; }
+  .logo-text{ font-family:var(--font-head); font-weight:700; font-size:15px; }
+  .close-btn{ width:32px; height:32px; border:1px solid var(--line-strong); border-radius:var(--r-btn); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:16px; }
+
+  .progress{ display:flex; gap:6px; padding:4px 0 28px; }
+  .progress i{ flex:1; height:3px; background:var(--line); border-radius:2px; overflow:hidden; }
+  .progress i b{ display:block; height:100%; width:0; background:var(--rc,var(--orange)); transition:width .3s ease, background .3s ease; }
+  [data-step="1"] .progress i:nth-child(-n+1) b{ width:100%; }
+  [data-step="2"] .progress i:nth-child(-n+2) b{ width:100%; }
+  [data-step="3"] .progress i:nth-child(-n+3) b{ width:100%; }
+  [data-step="4"] .progress i b{ width:100%; }
+
+  .step{ display:none; }
+  [data-step="1"] #step1, [data-step="2"] #step2, [data-step="3"] #step3, [data-step="4"] #step4{ display:block; }
+
+  .eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--rc,var(--orange)); margin-bottom:10px; transition:color .3s ease; }
+  h1{ font-family:var(--font-head); font-weight:700; font-size:23px; line-height:1.2; margin:0 0 8px; }
+  .step > p.sub{ font-size:13.5px; color:var(--muted); margin:0 0 24px; line-height:1.55; }
+
+  .role-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .role-opt{ position:relative; display:flex; align-items:center; gap:13px; background:transparent; border:1.5px solid var(--line-strong); border-radius:var(--r-lg); padding:14px 16px; cursor:pointer; text-align:left; width:100%; font-family:var(--font-body); }
+  .role-opt .ric{ width:32px; height:32px; flex:none; border:1.5px solid var(--line-strong); border-radius:var(--r-btn); display:flex; align-items:center; justify-content:center; }
+  .role-opt .ric svg{ width:16px; height:16px; stroke:var(--muted); fill:none; stroke-width:1.6; }
+  .role-opt .rt{ font-family:var(--font-head); font-size:14.5px; font-weight:600; color:var(--text-main); }
+  .role-opt .check{ margin-left:auto; width:18px; height:18px; border:1.5px solid var(--line-strong); border-radius:50%; flex:none; }
+  .role-opt.selected{ border-color:var(--rc); box-shadow:0 0 20px var(--rc-glow); }
+  .role-opt.selected .ric{ border-color:var(--rc); }
+  .role-opt.selected .ric svg{ stroke:var(--rc); }
+  .role-opt.selected .check{ border-color:var(--rc); background:var(--rc); }
+
+  .btn{ font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; padding:13px 14px; border-radius:var(--r-btn); cursor:pointer; border:1.5px solid var(--line-strong); background:transparent; color:var(--text-main); width:100%; }
+  .btn-primary{ border-color:var(--rc,var(--orange)); color:var(--rc,var(--orange)); box-shadow:0 0 20px var(--rc-glow,var(--orange-glow)); transition:border-color .3s ease, color .3s ease, box-shadow .3s ease; }
+  .btn-primary:disabled{ opacity:.4; box-shadow:none; cursor:not-allowed; }
+  .btn-back{ background:none; border:none; color:var(--muted); font-family:var(--font-mono); font-size:11.5px; padding:10px 0; cursor:pointer; display:flex; align-items:center; gap:6px; }
+
+  .auth-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .auth-opt{ display:flex; align-items:center; gap:12px; width:100%; padding:13px 16px; border:1.5px solid var(--line-strong); border-radius:var(--r-lg); background:transparent; color:var(--text-main); font-family:var(--font-body); font-size:14px; cursor:pointer; }
+  .auth-opt:hover{ border-color:var(--rc,var(--orange)); }
+  .auth-opt svg{ width:18px; height:18px; flex:none; }
+  .auth-note{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); line-height:1.5; margin-top:14px; }
+
+  .field{ margin-bottom:14px; }
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; }
+  .field label{ display:block; font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:6px; }
+  .field label .opt{ text-transform:none; letter-spacing:0; color:var(--muted-2); }
+  .field input, .field select{ width:100%; padding:12px 13px; background:transparent; border:1.5px solid var(--line-strong); border-radius:var(--r-btn); color:var(--text-main); font-size:14px; font-family:var(--font-body); }
+  .field select{ appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239c968d' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; background-size:16px; }
+  .field select option{ background:#141414; color:var(--text-main); }
+  .field input:focus, .field select:focus{ outline:none; border-color:var(--rc,var(--orange)); }
+  .field.prefilled input{ color:var(--muted); border-style:dashed; }
+  .pro-divider{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--rc,var(--orange)); border-top:1px solid var(--line); padding-top:16px; margin-bottom:14px; }
+  .prefill-banner{ display:flex; align-items:center; gap:10px; border:1px solid var(--line-strong); border-radius:var(--r-md); padding:10px 13px; margin-bottom:18px; font-size:12px; color:var(--muted); }
+  .prefill-banner b{ color:var(--text-main); font-weight:500; }
+
+  .role-badge{ display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; color:var(--rc); border:1px solid var(--rc); border-radius:999px; padding:5px 12px; margin-bottom:18px; }
+  .role-badge i{ width:6px; height:6px; border-radius:50%; background:var(--rc); }
+
+  /* nationwide toggle + multi-region checkboxes */
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--line-strong); border-radius:var(--r-md); padding:12px 14px; margin-bottom:10px; cursor:pointer; }
+  .toggle-row span{ font-size:13.5px; }
+  .toggle-switch{ width:38px; height:22px; border-radius:999px; background:var(--line-strong); position:relative; flex:none; transition:background .2s ease; }
+  .toggle-switch::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--muted); transition:.2s ease; }
+  .toggle-row.on .toggle-switch{ background:var(--rc,var(--orange)); }
+  .toggle-row.on .toggle-switch::after{ transform:translateX(16px); background:#0a0a0a; }
+  .kraj-multi{ display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; border:1.5px solid var(--line-strong); border-radius:var(--r-md); padding:12px 14px; margin-bottom:14px; }
+  .kraj-multi label{ display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-main); cursor:pointer; font-family:var(--font-body); text-transform:none; letter-spacing:0; }
+  .kraj-multi input[type="checkbox"]{ accent-color:var(--rc,var(--orange)); width:14px; height:14px; }
+
+  .done-icon{ width:56px; height:56px; border:1.5px solid var(--rc); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow:0 0 26px var(--rc-glow); }
+  .done-icon svg{ width:26px; height:26px; stroke:var(--rc); fill:none; stroke-width:2; }
+
+  footer{ padding:28px 0 32px; text-align:center; }
+  footer a{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); }
+</style>
+</head>
+<body data-step="1">
+
+<div class="wrap">
+  <header>
+    <a class="logo" href="index.html" style="text-decoration:none;">
+      <svg class="logo-mark" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M6 10.5V20h12v-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">Moje Stavba</span>
+    </a>
+    <a class="close-btn" href="index.html">✕</a>
+  </header>
+
+  <div class="progress"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+
+  <!-- STEP 1 — role -->
+  <div class="step" id="step1">
+    <div class="eyebrow">Krok 1 z 4</div>
+    <h1>Kdo jste?</h1>
+    <p class="sub">Podle role vám připravíme přesně to rozhraní, které potřebujete.</p>
+    <div class="role-list">
+      <button class="role-opt" data-role="stavebnik" data-color="#e08a42" onclick="selectRole(this)">
+        <div class="ric"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="rt">Stavebník</div><span class="check"></span>
+      </button>
+      <button class="role-opt" data-role="projektant" data-color="#5aa3d8" onclick="selectRole(this)">
+        <div class="ric"><svg viewBox="0 0 24 24"><circle cx="9" cy="15" r="4" stroke-linecap="round"/><path d="M12.5 11.5 20 4M20 4v5M20 4h-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="rt">Projektant</div><span class="check"></span>
+      </button>
+      <button class="role-opt" data-role="dozor" data-color="#5cb88a" onclick="selectRole(this)">
+        <div class="ric"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9-1.5 0-2.9-.37-4.14-1.02L3 21l1.02-3.86A8.96 8.96 0 013 12c0-4.97 4.03-9 9-9s9 4.03 9 9z" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="rt">Stavební dozor</div><span class="check"></span>
+      </button>
+      <button class="role-opt" data-role="remeslnik" data-color="#c1553f" onclick="selectRole(this)">
+        <div class="ric"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 01-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 015.4-5.4z" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="rt">Řemeslník</div><span class="check"></span>
+      </button>
+      <button class="role-opt" data-role="dodavatel" data-color="#9a7fd1" onclick="selectRole(this)">
+        <div class="ric"><svg viewBox="0 0 24 24"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="17.5" cy="17.5" r="1.5"/></svg></div>
+        <div class="rt">Dodavatel materiálu</div><span class="check"></span>
+      </button>
+    </div>
+    <button class="btn btn-primary" id="toStep2" disabled onclick="goStep(2)">Pokračovat</button>
+  </div>
+
+  <!-- STEP 2 — způsob přihlášení -->
+  <div class="step" id="step2">
+    <button class="btn-back" onclick="goStep(1)">← Zpět</button>
+    <div class="eyebrow">Krok 2 z 4</div>
+    <div class="role-badge"><i></i><span id="roleBadgeText2">Stavebník</span></div>
+    <h1>Jak se chcete přihlásit?</h1>
+    <p class="sub">Google a Apple rovnou předvyplní jméno, e-mail a fotku — nic nemusíte přepisovat.</p>
+    <div class="auth-list">
+      <button class="auth-opt" onclick="chooseAuth('google')">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.85A11 11 0 0012 23z"/><path fill="#FBBC05" d="M5.84 14.09A6.6 6.6 0 015.5 12c0-.73.13-1.43.34-2.09V7.06H2.18A11 11 0 001 12c0 1.77.42 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 00-9.82 6.06l3.66 2.85C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
+        Pokračovat přes Google
+      </button>
+      <button class="auth-opt" onclick="chooseAuth('apple')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-main)" stroke-width="1.4"><path d="M16.5 3.5c.15 1.1-.3 2.15-1 2.9-.75.8-1.9 1.4-2.95 1.3-.15-1.05.35-2.15 1-2.85.75-.8 2-1.35 2.95-1.35zM19.8 17.1c-.5 1.1-.75 1.6-1.4 2.55-.9 1.35-2.2 3-3.8 3.05-1.4.02-1.8-.9-3.65-.9-1.85 0-2.3.88-3.65.92-1.55.05-2.75-1.5-3.65-2.85-2.5-3.75-2.8-8.15-1.2-10.5C3.5 7.6 5.1 6.7 6.6 6.7c1.55 0 2.5.95 3.75.95 1.25 0 2-.95 3.75-.95 1.35 0 2.8.75 3.8 2.05-3.3 1.85-2.75 6.55.9 7.75-.35.9-.65 1.35-1 1.6z"/></svg>
+        Pokračovat přes Apple
+      </button>
+      <button class="auth-opt" onclick="chooseAuth('email')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-main)" stroke-width="1.6"><path d="M4 6h16v12H4zM4 6l8 7 8-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Pokračovat e-mailem
+      </button>
+    </div>
+    <div class="auth-note">Apple i Google používáme jen na přihlášení — nic za vás nepublikujeme a nikomu nic neposíláme bez vašeho svolení.</div>
+  </div>
+
+  <!-- STEP 3 — údaje -->
+  <div class="step" id="step3">
+    <button class="btn-back" onclick="goStep(2)">← Zpět</button>
+    <div class="eyebrow">Krok 3 z 4</div>
+    <div class="role-badge"><i></i><span id="roleBadgeText3">Stavebník</span></div>
+    <h1>Vaše údaje</h1>
+    <p class="sub" id="step3sub">Stačí e-mail — heslo nepotřebujete, pošleme vám přihlašovací odkaz.</p>
+
+    <div class="prefill-banner" id="prefillBanner" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5cb88a" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Staženo z <b id="prefillSource">Google</b>: jméno, e-mail a fotka profilu.</span>
+    </div>
+
+    <div class="field" id="fFirmaTop" style="display:none"><label>Název firmy</label><input type="text" placeholder="Novák stavební materiály s.r.o."></div>
+
+    <div id="osobniUdaje">
+      <div class="field-row">
+        <div class="field" id="fJmeno"><label>Jméno</label><input type="text" placeholder="Jan"></div>
+        <div class="field" id="fPrijmeni"><label>Příjmení</label><input type="text" placeholder="Novák"></div>
+      </div>
+      <div class="field" id="fPrezdivka"><label>Přezdívka <span class="opt">(nepovinné)</span></label><input type="text" placeholder="Jak vás uvidí ostatní na projektu"></div>
+    </div>
+
+    <!-- lokalita: stavebník = jeden kraj -->
+    <div id="krajStavebnik">
+      <div class="field"><label>Kraj</label>
+        <select>
+          <option value="">Vyberte kraj</option>
+          <option>Hlavní město Praha</option><option>Středočeský kraj</option><option>Jihočeský kraj</option>
+          <option>Plzeňský kraj</option><option>Karlovarský kraj</option><option>Ústecký kraj</option>
+          <option>Liberecký kraj</option><option>Královéhradecký kraj</option><option>Pardubický kraj</option>
+          <option>Kraj Vysočina</option><option>Jihomoravský kraj</option><option>Olomoucký kraj</option>
+          <option>Zlínský kraj</option><option>Moravskoslezský kraj</option>
+        </select>
+      </div>
+      <div class="field"><label>Město/obec <span class="opt">(nepovinné)</span></label><input type="text" placeholder="např. Most"></div>
+    </div>
+
+    <!-- lokalita: profesní role = celá ČR nebo víc krajů -->
+    <div id="krajPro" style="display:none">
+      <label style="display:block; font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:6px;">Kde působíte?</label>
+      <div class="toggle-row" id="celaCrRow" onclick="toggleCelaCr()">
+        <span>Celá ČR</span><div class="toggle-switch"></div>
+      </div>
+      <div class="kraj-multi" id="krajMulti">
+        <label><input type="checkbox" value="Praha">Praha</label>
+        <label><input type="checkbox" value="Středočeský">Středočeský</label>
+        <label><input type="checkbox" value="Jihočeský">Jihočeský</label>
+        <label><input type="checkbox" value="Plzeňský">Plzeňský</label>
+        <label><input type="checkbox" value="Karlovarský">Karlovarský</label>
+        <label><input type="checkbox" value="Ústecký">Ústecký</label>
+        <label><input type="checkbox" value="Liberecký">Liberecký</label>
+        <label><input type="checkbox" value="Královéhradecký">Královéhradecký</label>
+        <label><input type="checkbox" value="Pardubický">Pardubický</label>
+        <label><input type="checkbox" value="Vysočina">Vysočina</label>
+        <label><input type="checkbox" value="Jihomoravský">Jihomoravský</label>
+        <label><input type="checkbox" value="Olomoucký">Olomoucký</label>
+        <label><input type="checkbox" value="Zlínský">Zlínský</label>
+        <label><input type="checkbox" value="Moravskoslezský">Moravskoslezský</label>
+      </div>
+      <div class="field"><label>Město <span class="opt">(nepovinné)</span></label><input type="text" placeholder="např. Most"></div>
+    </div>
+
+    <div class="field" id="fEmail"><label>Kontaktní e-mail</label><input type="email" placeholder="vas@email.cz"></div>
+
+    <div id="proFields" style="display:none">
+      <div class="pro-divider">Profesní údaje</div>
+
+      <div id="oborTags" style="display:none">
+        <label style="display:block; font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:6px;">Obory činnosti</label>
+        <div class="kraj-multi" style="grid-template-columns:1fr 1fr;">
+          <label><input type="checkbox" value="Elektrikář">Elektrikář</label>
+          <label><input type="checkbox" value="Instalatér">Instalatér</label>
+          <label><input type="checkbox" value="Zedník">Zedník</label>
+          <label><input type="checkbox" value="Pokrývač">Pokrývač</label>
+          <label><input type="checkbox" value="Klempíř">Klempíř</label>
+          <label><input type="checkbox" value="Malíř a lakýrník">Malíř a lakýrník</label>
+          <label><input type="checkbox" value="Podlahář">Podlahář</label>
+          <label><input type="checkbox" value="Sádrokartonář">Sádrokartonář</label>
+          <label><input type="checkbox" value="Truhlář">Truhlář</label>
+          <label><input type="checkbox" value="Obkladač">Obkladač</label>
+          <label><input type="checkbox" value="Tesař">Tesař</label>
+          <label><input type="checkbox" value="Zámečník">Zámečník</label>
+          <label><input type="checkbox" value="Izolatér">Izolatér</label>
+          <label><input type="checkbox" value="Zahrada / terén">Zahrada / terén</label>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Jiné <span class="opt">(nepovinné)</span></label><input type="text" placeholder="doplňte, pokud chybí váš obor"></div>
+      </div>
+
+      <div class="field" id="fObor" style="display:none"><label>Co dodáváte</label><input type="text" placeholder="např. cihly, izolace, střešní krytina"></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="goStep(4)">Vytvořit profil</button>
+  </div>
+
+  <!-- STEP 4 — hotovo -->
+  <div class="step" id="step4" style="text-align:center; padding-top:20px;">
+    <div class="done-icon" style="margin-left:auto;margin-right:auto;"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="eyebrow" style="justify-content:center; display:block;">Hotovo</div>
+    <h1>Profil vytvořen</h1>
+    <p class="sub">Vítejte, <span id="doneRole">stavebníku</span>. <span id="doneAuthNote">Přihlašovací odkaz jsme poslali na váš e-mail.</span></p>
+    <button class="btn btn-primary" onclick="goToDashboard()">Otevřít nástěnku →</button>
+  </div>
+
+  <footer><a href="index.html">← Zpět na Moje Stavba</a></footer>
+</div>
+
+<script>
+  const roleNames = {
+    stavebnik: {label:'Stavebník', done:'stavebníku'},
+    projektant: {label:'Projektant', done:'projektante'},
+    dozor: {label:'Stavební dozor', done:'dozore'},
+    remeslnik: {label:'Řemeslník', done:'řemeslníku'},
+    dodavatel: {label:'Dodavatel materiálu', done:'dodavateli'}
+  };
+  const roleGlow = {
+    stavebnik:'rgba(224,138,66,.3)', projektant:'rgba(90,163,216,.3)',
+    dozor:'rgba(92,184,138,.3)', remeslnik:'rgba(193,85,63,.3)', dodavatel:'rgba(154,127,209,.3)'
+  };
+
+  function selectRole(btn){
+    document.querySelectorAll('.role-opt').forEach(o => o.classList.remove('selected'));
+    btn.classList.add('selected');
+    const role = btn.dataset.role;
+    const color = btn.dataset.color;
+    document.documentElement.style.setProperty('--rc', color);
+    document.documentElement.style.setProperty('--rc-glow', roleGlow[role]);
+    document.getElementById('toStep2').disabled = false;
+    document.getElementById('roleBadgeText2').textContent = roleNames[role].label;
+    document.getElementById('roleBadgeText3').textContent = roleNames[role].label;
+    document.getElementById('doneRole').textContent = roleNames[role].done;
+    document.body.dataset.selectedRole = role;
+
+    const isStavebnik = role === 'stavebnik';
+    document.getElementById('krajStavebnik').style.display = isStavebnik ? 'block' : 'none';
+    document.getElementById('krajPro').style.display = isStavebnik ? 'none' : 'block';
+
+    const isDodavatel = role === 'dodavatel';
+    const isRemeslnik = role === 'remeslnik';
+    const showPro = (isRemeslnik || isDodavatel);
+
+    document.getElementById('fFirmaTop').style.display = isDodavatel ? 'block' : 'none';
+    document.getElementById('osobniUdaje').style.display = isDodavatel ? 'none' : 'block';
+
+    document.getElementById('proFields').style.display = showPro ? 'block' : 'none';
+    document.getElementById('oborTags').style.display = isRemeslnik ? 'block' : 'none';
+    document.getElementById('fObor').style.display = isDodavatel ? 'block' : 'none';
+  }
+
+  function toggleCelaCr(){
+    const row = document.getElementById('celaCrRow');
+    const on = row.classList.toggle('on');
+    document.getElementById('krajMulti').style.display = on ? 'none' : 'grid';
+  }
+
+  function chooseAuth(method){
+    const banner = document.getElementById('prefillBanner');
+    const jmeno = document.getElementById('fJmeno');
+    const prijmeni = document.getElementById('fPrijmeni');
+    const email = document.getElementById('fEmail').querySelector('input');
+    const sub = document.getElementById('step3sub');
+    const doneNote = document.getElementById('doneAuthNote');
+
+    if(method === 'google' || method === 'apple'){
+      banner.style.display = 'flex';
+      document.getElementById('prefillSource').textContent = method === 'google' ? 'Google' : 'Apple';
+      jmeno.classList.add('prefilled'); jmeno.querySelector('input').value = 'Jan';
+      prijmeni.classList.add('prefilled'); prijmeni.querySelector('input').value = 'Novák';
+      email.value = 'jan.novak@' + (method === 'google' ? 'gmail.com' : 'icloud.com');
+      sub.textContent = 'Zkontrolujte údaje ze ' + (method === 'google' ? 'Google' : 'Apple') + ' a doplňte lokalitu.';
+      doneNote.textContent = 'Přihlášeni jste rovnou přes ' + (method === 'google' ? 'Google' : 'Apple') + '.';
+    } else {
+      banner.style.display = 'none';
+      jmeno.classList.remove('prefilled'); jmeno.querySelector('input').value = '';
+      prijmeni.classList.remove('prefilled'); prijmeni.querySelector('input').value = '';
+      email.value = '';
+      sub.textContent = 'Stačí e-mail — heslo nepotřebujete, pošleme vám přihlašovací odkaz.';
+      doneNote.textContent = 'Přihlašovací odkaz jsme poslali na váš e-mail.';
+    }
+    goStep(3);
+  }
+
+  function goToDashboard(){
+    const dashboards = { remeslnik: 'reme-dashboard.html' };
+    location.href = dashboards[document.body.dataset.selectedRole] || 'dashboard.html';
+  }
+  function goStep(n){
+    document.body.dataset.step = n;
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+
+</body>
+</html>

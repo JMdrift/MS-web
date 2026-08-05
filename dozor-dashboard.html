@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moje Stavba — Přehled</title>
+<link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0a0a0a; --bg-panel:#101010; --bg-panel-2:#141414;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.22);
+    --orange:#e08a42; --orange-glow:rgba(224,138,66,.28);
+    --blue:#5aa3d8; --blue-glow:rgba(90,163,216,.24);
+    --text-main:#f6f3ee; --muted:#9c968d; --muted-2:#645f57;
+    --r-lg:0px; --r-md:0px; --r-btn:0px;
+    --font-head:'Space Grotesk',sans-serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg-deep);color:var(--text-main);font-family:var(--font-body); overflow-x:hidden; max-width:100vw;}
+  a{color:inherit;text-decoration:none;}
+  svg{display:block;}
+
+  .layout{ display:flex; width:100%; max-width:100vw; }
+  .main{ flex:1; min-width:0; max-width:100%; }
+  .sidebar{ display:none; }
+  .topbar{ position:sticky; top:0; z-index:30; background:rgba(10,10,10,.95); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .topbar-inner{ display:flex; align-items:center; justify-content:space-between; padding:12px 20px; gap:14px; }
+  .logo{ display:flex; align-items:center; gap:8px; }
+  .logo-mark{ width:20px; height:20px; }
+  .logo-mark path{ stroke:var(--orange); stroke-width:1.6; fill:none; }
+  .logo-text{ font-family:var(--font-head); font-weight:700; font-size:14px; }
+  .topbar-links{ display:none; gap:4px; flex:1; }
+  .topbar-links a{ font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; padding:8px 12px; color:var(--muted); }
+  .topbar-links a.active{ color:var(--orange); }
+  .topbar-right{ display:flex; align-items:center; gap:10px; }
+  .avatar-btn{ width:30px; height:30px; border:1.5px solid var(--orange); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11px; color:var(--orange); flex:none; }
+  .burger{ width:32px; height:32px; border:1px solid var(--line-strong); background:transparent; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; }
+  .burger span{ width:14px; height:1.5px; background:var(--text-main); }
+
+  .site-menu-overlay{ position:fixed; inset:0; background:var(--bg-deep); z-index:50; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:.2s ease; }
+  .site-menu-overlay.open{ opacity:1; pointer-events:auto; }
+  .site-menu-links{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; padding:0 20px; }
+  .site-menu-links a{ font-family:var(--font-head); font-size:24px; font-weight:600; padding:12px 0; border-bottom:1px solid var(--line); color:var(--muted); }
+  .site-menu-links a.active{ color:var(--orange); }
+
+  /* ===== CONTEXT NAV — changes per section ===== */
+  .project-row{ display:flex; align-items:center; gap:10px; padding:14px 20px 0; flex-wrap:wrap; }
+  .project-switcher{ position:relative; }
+  .project-name{ font-family:var(--font-head); font-weight:700; font-size:17px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .project-name svg{ width:13px; height:13px; stroke:var(--muted); transition:transform .15s ease; }
+  .project-switcher.open .project-name svg{ transform:rotate(180deg); }
+  .switcher-panel{ display:none; position:absolute; top:calc(100% + 8px); left:0; min-width:220px; background:var(--bg-panel); border:1.5px solid var(--line-strong); z-index:35; }
+  .project-switcher.open .switcher-panel{ display:block; }
+  .switcher-panel a{ display:flex; align-items:center; justify-content:space-between; padding:11px 14px; font-size:13px; border-bottom:1px solid var(--line); color:var(--text-main); }
+  .switcher-panel a.current{ color:var(--orange); }
+  .switcher-panel a.current::after{ content:"\25CF"; font-size:8px; }
+  .switcher-panel a.add{ color:var(--muted); font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; border-bottom:none; }
+  .context-label{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); padding:14px 20px 0; }
+
+  .context-bar{ position:sticky; top:53px; z-index:25; background:var(--bg-deep); border-bottom:1px solid var(--line); display:flex; overflow-x:auto; gap:6px; padding:12px 20px; scrollbar-width:none; margin-top:10px; }
+  .context-bar::-webkit-scrollbar{ display:none; }
+  .context-bar a{ flex:none; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.04em; padding:8px 13px; border:1px solid var(--line-strong); color:var(--muted); white-space:nowrap; }
+  .context-bar a.active{ color:var(--orange); border-color:var(--orange); background:rgba(224,138,66,.08); }
+
+  .wrap{ padding:0 20px 60px; }
+  .back-btn{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-main); padding:9px 14px; margin:14px 0 6px; border:1.5px solid var(--line-strong); }
+  .back-btn:hover{ border-color:var(--orange); color:var(--orange); }
+  .back-btn:hover{ color:var(--orange); }
+  section{ padding-top:0; }
+
+  :root{ --orange:#5cb88a; --orange-glow:rgba(92,184,138,.28); }
+
+  .eyebrow{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--orange); margin-bottom:8px; }
+  h1.pt{ font-family:var(--font-head); font-weight:700; font-size:20px; margin:0 0 16px; }
+  .section-title{ display:flex; align-items:center; justify-content:space-between; margin:22px 0 12px; }
+  .section-title h2{ font-family:var(--font-head); font-size:15px; margin:0; font-weight:600; }
+
+  .proj-list{ display:flex; flex-direction:column; gap:10px; }
+  .proj-card{ display:flex; align-items:center; gap:14px; border:1.5px solid var(--orange); box-shadow:0 0 20px var(--orange-glow); padding:15px 16px; color:inherit; text-decoration:none; }
+  .proj-thumb{ width:38px; height:38px; flex:none; border:1.5px solid var(--orange); display:flex; align-items:center; justify-content:center; }
+  .proj-thumb svg{ width:17px; height:17px; stroke:var(--orange); fill:none; stroke-width:1.6; }
+  .proj-info{ flex:1; min-width:0; }
+  .proj-info h3{ font-family:var(--font-head); font-size:14px; margin:0 0 2px; }
+  .proj-info small{ color:var(--muted); font-size:11px; }
+  .proj-badge{ font-family:var(--font-mono); font-size:9.5px; color:var(--orange); text-transform:uppercase; white-space:nowrap; }
+
+  .filter-pills{ display:flex; gap:6px; overflow-x:auto; margin-bottom:6px; scrollbar-width:none; }
+  .filter-pills::-webkit-scrollbar{ display:none; }
+  .filter-pill{ flex:none; font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; padding:8px 13px; border:1px solid var(--line-strong); color:var(--muted); white-space:nowrap; cursor:pointer; background:none; }
+  .filter-pill.active{ color:var(--orange); border-color:var(--orange); background:rgba(92,184,138,.08); }
+  .show-all-btn{ display:block; text-align:center; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--orange); padding:14px 0 0; }
+
+  .feed{ display:flex; flex-direction:column; }
+  .feed-item{ display:flex; gap:12px; padding:13px 0; border-bottom:1px solid var(--line); color:inherit; text-decoration:none; }
+  .feed-item:first-child{ border-top:1px solid var(--line); }
+  .feed-icon{ width:30px; height:30px; flex:none; border:1px solid var(--line-strong); display:flex; align-items:center; justify-content:center; }
+  .feed-icon svg{ width:14px; height:14px; stroke:var(--orange); fill:none; stroke-width:1.6; }
+  .feed-text{ font-size:13px; line-height:1.4; } .feed-text b{ font-weight:600; }
+  .feed-time{ font-size:11px; color:var(--muted-2); margin-top:2px; }
+  .feed-unread{ width:7px; height:7px; border-radius:50%; background:var(--orange); flex:none; align-self:center; margin-left:auto; }
+
+
+  @media (min-width: 900px){
+    .topbar-links{ display:flex; }
+    .burger{ display:none; }
+    .context-bar{ display:none; }
+    .project-row{ padding:0; margin-bottom:4px; }
+    .context-label{ padding:0; margin-bottom:14px; }
+    .layout{ display:flex; }
+    .sidebar{ display:block; width:220px; flex:none; border-right:1px solid var(--line); position:sticky; top:53px; height:calc(100vh - 53px); padding:24px 16px; }
+    .sidebar nav{ display:flex; flex-direction:column; gap:2px; }
+    .sidebar nav a{ display:flex; align-items:center; gap:10px; padding:10px 12px; font-size:13px; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.03em; font-size:11.5px; }
+    .sidebar nav a.active{ color:var(--orange); background:rgba(224,138,66,.08); border:1px solid rgba(224,138,66,.3); }
+    .sidebar nav a:not(.active):hover{ color:var(--text-main); background:var(--line); }
+    .main{ flex:1; min-width:0; }
+    .wrap{ max-width:760px; padding:32px 40px 60px; }
+    
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" href="dozor-dashboard.html">
+      <svg class="logo-mark" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M6 10.5V20h12v-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">Moje Stavba</span>
+    </a>
+    <nav class="topbar-links">
+      <a href="dozor-dashboard.html" class="active">Dashboard</a>
+      <a href="#">Marketplace</a>
+      <a href="dozor-kontakty.html">Kontakty</a>
+    </nav>
+    <div class="topbar-right">
+      <a class="avatar-btn" href="dozor-profil.html">JN</a>
+      <button class="burger" onclick="toggleSiteMenu(true)"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="site-menu-overlay" id="siteMenuOverlay">
+  <div class="topbar-inner">
+    <a class="logo" href="dozor-dashboard.html">
+      <svg class="logo-mark" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M6 10.5V20h12v-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">Moje Stavba</span>
+    </a>
+    <button class="burger" onclick="toggleSiteMenu(false)">✕</button>
+  </div>
+  <div class="site-menu-links">
+    <a href="dozor-dashboard.html" class="active" onclick="toggleSiteMenu(false)">Dashboard</a>
+    <a href="#" onclick="toggleSiteMenu(false)">Marketplace</a>
+    <a href="dozor-kontakty.html" onclick="toggleSiteMenu(false)">Kontakty</a>
+    <a href="dozor-profil.html" class="" onclick="toggleSiteMenu(false)">Profil</a>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <nav>
+      <a href="dozor-dashboard.html" class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Přehled</a>
+      <a href="dozor-projekty.html"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" stroke-linecap="round" stroke-linejoin="round"/></svg>Projekty</a>
+      <a href="dozor-dokumenty.html"><svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12h6M9 16h6"/></svg>Dokumenty</a>
+      <a href="dozor-kalendar.html"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalendář</a>
+    </nav>
+  </aside>
+  <div class="main">
+    <div class="context-bar">
+      <a href="dozor-dashboard.html" class="active">Přehled</a>
+      <a href="dozor-projekty.html">Projekty</a>
+      <a href="dozor-dokumenty.html">Dokumenty</a>
+      <a href="dozor-kalendar.html">Kalendář</a>
+    </div>
+    <div class="wrap">
+      
+
+      <div class="eyebrow">Vítejte zpět, Pavle</div>
+      <h1 class="pt">Přehled dozoru</h1>
+
+      <div class="section-title"><h2>Projekty k dozoru</h2><a href="dozor-projekty.html" style="font-family:var(--font-mono); font-size:10.5px; color:var(--muted); text-transform:uppercase;">Všech 20 →</a></div>
+      <div class="proj-list">
+        <a class="proj-card" href="#">
+          <div class="proj-thumb"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="proj-info"><h3>Javůrkovi</h3><small>Malé Březno · Hrubá stavba</small></div>
+          <div class="proj-badge">2 nové</div>
+        </a>
+        <a class="proj-card" href="#">
+          <div class="proj-thumb"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="proj-info"><h3>Svobodovi</h3><small>Chomutov · Základy</small></div>
+          <div class="proj-badge">3 nové</div>
+        </a>
+        <a class="proj-card" href="#">
+          <div class="proj-thumb"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="proj-info"><h3>Novákovi</h3><small>Teplice · Střecha</small></div>
+          <div class="proj-badge">1 nová</div>
+        </a>
+      </div>
+
+      <div class="section-title"><h2>Aktuality</h2></div>
+      <div class="filter-pills" id="projFilter">
+        <button class="filter-pill active" data-proj="all">Vše</button>
+        <button class="filter-pill" data-proj="javurkovi">Javůrkovi</button>
+        <button class="filter-pill" data-proj="svobodovi">Svobodovi</button>
+        <button class="filter-pill" data-proj="novakovi">Novákovi</button>
+      </div>
+      <div class="feed" id="feedList">
+        <a class="feed-item" href="dozor-polozka-detail.html" data-proj="javurkovi">
+          <div class="feed-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div class="feed-text"><b>Javůrkovi</b> přidali zápis do deníku</div><div class="feed-time">dnes, 09:12 · Hrubá stavba</div></div>
+          <div class="feed-unread"></div>
+        </a>
+        <a class="feed-item" href="#" data-proj="svobodovi">
+          <div class="feed-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9-1.5 0-2.9-.37-4.14-1.02L3 21l1.02-3.86A8.96 8.96 0 013 12c0-4.97 4.03-9 9-9s9 4.03 9 9z" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div class="feed-text"><b>Svobodovi</b> dokončili etapu <b>Zemní práce</b></div><div class="feed-time">dnes, 08:30</div></div>
+          <div class="feed-unread"></div>
+        </a>
+        <a class="feed-item" href="dozor-polozka-detail.html" data-proj="javurkovi">
+          <div class="feed-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 15l-5-5-5 5-2-2-3 3"/></svg></div>
+          <div><div class="feed-text">Nová fotka v etapě <b>Hrubá stavba</b></div><div class="feed-time">včera, 14:05</div></div>
+          <div class="feed-unread"></div>
+        </a>
+        <a class="feed-item" href="#" data-proj="novakovi">
+          <div class="feed-icon"><svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12h6M9 16h6"/></svg></div>
+          <div><div class="feed-text"><b>Novákovi</b> nahráli dokument: <b>Revize_strechy.pdf</b></div><div class="feed-time">včera, 11:40</div></div>
+          <div class="feed-unread"></div>
+        </a>
+        <a class="feed-item" href="#" data-proj="javurkovi">
+          <div class="feed-icon"><svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12h6M9 16h6"/></svg></div>
+          <div><div class="feed-text">Nový dokument: <b>Statika_2026.pdf</b></div><div class="feed-time">28. 7. 2026</div></div>
+        </a>
+        <a class="feed-item" href="#" data-proj="svobodovi">
+          <div class="feed-icon"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div class="feed-text"><b>Svobodovi</b> přidali zápis do deníku</div><div class="feed-time">27. 7. 2026</div></div>
+        </a>
+        <a class="feed-item" href="#" data-proj="javurkovi">
+          <div class="feed-icon"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div class="feed-text">Dokončena etapa <b>Základy</b></div><div class="feed-time">26. 7. 2026</div></div>
+        </a>
+        <a class="feed-item" href="#" data-proj="novakovi">
+          <div class="feed-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 15l-5-5-5 5-2-2-3 3"/></svg></div>
+          <div><div class="feed-text"><b>Novákovi</b> přidali fotky ze střechy</div><div class="feed-time">25. 7. 2026</div></div>
+        </a>
+      </div>
+      <a class="show-all-btn" id="showAllBtn" href="#" onclick="showAllFeed(event)" style="display:none">Zobrazit vše</a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleSiteMenu(open){
+    document.getElementById('siteMenuOverlay').classList.toggle('open', open);
+  }
+  
+  let curProj = 'all';
+  let showAllOn = false;
+
+  function applyFeedFilter(){
+    const items = document.querySelectorAll('#feedList .feed-item');
+    let matched = 0;
+    items.forEach(item => {
+      const ok = curProj === 'all' || item.dataset.proj === curProj;
+      if(ok){
+        matched++;
+        item.style.display = (showAllOn || matched <= 5) ? 'flex' : 'none';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+    document.getElementById('showAllBtn').style.display = (!showAllOn && matched > 5) ? 'block' : 'none';
+  }
+
+  document.getElementById('projFilter').addEventListener('click', function(e){
+    const btn = e.target.closest('.filter-pill');
+    if(!btn) return;
+    this.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    curProj = btn.dataset.proj;
+    showAllOn = false;
+    applyFeedFilter();
+  });
+
+  function showAllFeed(e){ e.preventDefault(); showAllOn = true; applyFeedFilter(); }
+  applyFeedFilter();
+
+</script>
+</body>
+</html>

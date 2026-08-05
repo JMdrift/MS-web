@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moje Stavba — Dokumenty</title>
+<link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0a0a0a; --bg-panel:#101010; --bg-panel-2:#141414;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.22);
+    --orange:#e08a42; --orange-glow:rgba(224,138,66,.28);
+    --blue:#5aa3d8; --blue-glow:rgba(90,163,216,.24);
+    --text-main:#f6f3ee; --muted:#9c968d; --muted-2:#645f57;
+    --r-lg:0px; --r-md:0px; --r-btn:0px;
+    --font-head:'Space Grotesk',sans-serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg-deep);color:var(--text-main);font-family:var(--font-body); overflow-x:hidden; max-width:100vw;}
+  a{color:inherit;text-decoration:none;}
+  svg{display:block;}
+
+  .layout{ display:flex; width:100%; max-width:100vw; }
+  .main{ flex:1; min-width:0; max-width:100%; }
+  .sidebar{ display:none; }
+  .topbar{ position:sticky; top:0; z-index:30; background:rgba(10,10,10,.95); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .topbar-inner{ display:flex; align-items:center; justify-content:space-between; padding:12px 20px; gap:14px; }
+  .logo{ display:flex; align-items:center; gap:8px; }
+  .logo-mark{ width:20px; height:20px; }
+  .logo-mark path{ stroke:var(--orange); stroke-width:1.6; fill:none; }
+  .logo-text{ font-family:var(--font-head); font-weight:700; font-size:14px; }
+  .topbar-links{ display:none; gap:4px; flex:1; }
+  .topbar-links a{ font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; padding:8px 12px; color:var(--muted); }
+  .topbar-links a.active{ color:var(--orange); }
+  .topbar-right{ display:flex; align-items:center; gap:10px; }
+  .avatar-btn{ width:30px; height:30px; border:1.5px solid var(--orange); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11px; color:var(--orange); flex:none; }
+  .burger{ width:32px; height:32px; border:1px solid var(--line-strong); background:transparent; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; }
+  .burger span{ width:14px; height:1.5px; background:var(--text-main); }
+
+  .site-menu-overlay{ position:fixed; inset:0; background:var(--bg-deep); z-index:50; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:.2s ease; }
+  .site-menu-overlay.open{ opacity:1; pointer-events:auto; }
+  .site-menu-links{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; padding:0 20px; }
+  .site-menu-links a{ font-family:var(--font-head); font-size:24px; font-weight:600; padding:12px 0; border-bottom:1px solid var(--line); color:var(--muted); }
+  .site-menu-links a.active{ color:var(--orange); }
+
+  /* ===== CONTEXT NAV — changes per section ===== */
+  .project-row{ display:flex; align-items:center; gap:10px; padding:14px 20px 0; flex-wrap:wrap; }
+  .project-switcher{ position:relative; }
+  .project-name{ font-family:var(--font-head); font-weight:700; font-size:17px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .project-name svg{ width:13px; height:13px; stroke:var(--muted); transition:transform .15s ease; }
+  .project-switcher.open .project-name svg{ transform:rotate(180deg); }
+  .switcher-panel{ display:none; position:absolute; top:calc(100% + 8px); left:0; min-width:220px; background:var(--bg-panel); border:1.5px solid var(--line-strong); z-index:35; }
+  .project-switcher.open .switcher-panel{ display:block; }
+  .switcher-panel a{ display:flex; align-items:center; justify-content:space-between; padding:11px 14px; font-size:13px; border-bottom:1px solid var(--line); color:var(--text-main); }
+  .switcher-panel a.current{ color:var(--orange); }
+  .switcher-panel a.current::after{ content:"\25CF"; font-size:8px; }
+  .switcher-panel a.add{ color:var(--muted); font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; border-bottom:none; }
+  .context-label{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); padding:14px 20px 0; }
+
+  .context-bar{ position:sticky; top:53px; z-index:25; background:var(--bg-deep); border-bottom:1px solid var(--line); display:flex; overflow-x:auto; gap:6px; padding:12px 20px; scrollbar-width:none; margin-top:10px; }
+  .context-bar::-webkit-scrollbar{ display:none; }
+  .context-bar a{ flex:none; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.04em; padding:8px 13px; border:1px solid var(--line-strong); color:var(--muted); white-space:nowrap; }
+  .context-bar a.active{ color:var(--orange); border-color:var(--orange); background:rgba(224,138,66,.08); }
+
+  .wrap{ padding:0 20px 60px; }
+  .back-btn{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-main); padding:9px 14px; margin:14px 0 6px; border:1.5px solid var(--line-strong); }
+  .back-btn:hover{ border-color:var(--orange); color:var(--orange); }
+  .back-btn:hover{ color:var(--orange); }
+  section{ padding-top:0; }
+
+  :root{ --orange:#5aa3d8; --orange-glow:rgba(90,163,216,.28); }
+
+  h1.pt{ font-family:var(--font-head); font-size:20px; margin:20px 0 16px; }
+  .btn{ display:block; text-align:center; font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:.05em; padding:13px; border:1.5px solid var(--orange); color:var(--orange); box-shadow:0 0 18px var(--orange-glow); }
+  .folder-acc{ border:1px solid var(--line-strong); border-bottom:none; }
+  .folder-acc:last-of-type{ border-bottom:1px solid var(--line-strong); margin-bottom:22px; }
+  .folder-acc summary{ list-style:none; cursor:pointer; padding:14px 16px; display:flex; align-items:center; gap:10px; }
+  .folder-acc summary::-webkit-details-marker{ display:none; }
+  .folder-acc summary svg{ width:16px; height:16px; stroke:var(--muted); fill:none; stroke-width:1.6; flex:none; }
+  .folder-acc summary .fname{ flex:1; font-size:13.5px; }
+  .folder-acc summary .fcount{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); }
+  .folder-acc[open] summary .fcount{ color:var(--orange); }
+  .folder-acc .fbody{ padding:0 16px 16px; border-top:1px solid var(--line); }
+  .file-row{ display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .file-row:last-child{ border-bottom:none; }
+  .file-tag{ font-family:var(--font-mono); font-size:8.5px; font-weight:700; padding:2px 5px; background:#5cb88a; color:#0a2a1a; flex:none; }
+  .file-tag.txt{ background:var(--orange); color:#04212f; }
+  .file-name{ font-size:12.5px; }
+  .modal-overlay{ position:fixed; inset:0; background:rgba(10,10,10,.85); display:none; align-items:flex-end; justify-content:center; z-index:60; }
+  .modal-overlay.open{ display:flex; }
+  .modal{ width:100%; max-width:460px; background:var(--bg-panel); border:1.5px solid var(--line-strong); border-bottom:none; padding:24px 22px; position:relative; max-height:88vh; overflow-y:auto; }
+  .modal-close{ position:absolute; top:16px; right:16px; background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; }
+  .modal h3{ font-family:var(--font-head); font-size:19px; margin:0 0 18px; }
+  .type-toggle{ display:flex; border:1px solid var(--line-strong); margin-bottom:18px; }
+  .type-toggle button{ flex:1; padding:10px 4px; background:none; border:none; color:var(--muted); font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.03em; cursor:pointer; }
+  .type-toggle button:not(:last-child){ border-right:1px solid var(--line-strong); }
+  .type-toggle button.active{ color:var(--orange); background:rgba(90,163,216,.08); }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:6px; }
+  .field input, .field select, .field textarea{ width:100%; padding:12px 13px; background:transparent; border:1.5px solid var(--line-strong); color:var(--text-main); font-size:14px; font-family:var(--font-body); }
+  .field select{ appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239c968d' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; background-size:16px; }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:var(--orange); }
+  .upload-box{ border:1.5px dashed var(--line-strong); padding:24px; text-align:center; font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-bottom:16px; }
+
+
+  @media (min-width: 900px){
+    .topbar-links{ display:flex; }
+    .burger{ display:none; }
+    .context-bar{ display:none; }
+    .project-row{ padding:0; margin-bottom:4px; }
+    .context-label{ padding:0; margin-bottom:14px; }
+    .layout{ display:flex; }
+    .sidebar{ display:block; width:220px; flex:none; border-right:1px solid var(--line); position:sticky; top:53px; height:calc(100vh - 53px); padding:24px 16px; }
+    .sidebar nav{ display:flex; flex-direction:column; gap:2px; }
+    .sidebar nav a{ display:flex; align-items:center; gap:10px; padding:10px 12px; font-size:13px; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.03em; font-size:11.5px; }
+    .sidebar nav a.active{ color:var(--orange); background:rgba(224,138,66,.08); border:1px solid rgba(224,138,66,.3); }
+    .sidebar nav a:not(.active):hover{ color:var(--text-main); background:var(--line); }
+    .main{ flex:1; min-width:0; }
+    .wrap{ max-width:760px; padding:32px 40px 60px; }
+    
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" href="projektant-dashboard.html">
+      <svg class="logo-mark" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M6 10.5V20h12v-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">Moje Stavba</span>
+    </a>
+    <nav class="topbar-links">
+      <a href="projektant-dashboard.html" class="">Dashboard</a>
+      <a href="#">Marketplace</a>
+      <a href="projektant-kontakty.html">Kontakty</a>
+    </nav>
+    <div class="topbar-right">
+      <a class="avatar-btn" href="projektant-profil.html">JN</a>
+      <button class="burger" onclick="toggleSiteMenu(true)"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="site-menu-overlay" id="siteMenuOverlay">
+  <div class="topbar-inner">
+    <a class="logo" href="projektant-dashboard.html">
+      <svg class="logo-mark" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M6 10.5V20h12v-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">Moje Stavba</span>
+    </a>
+    <button class="burger" onclick="toggleSiteMenu(false)">✕</button>
+  </div>
+  <div class="site-menu-links">
+    <a href="projektant-dashboard.html" class="" onclick="toggleSiteMenu(false)">Dashboard</a>
+    <a href="#" onclick="toggleSiteMenu(false)">Marketplace</a>
+    <a href="projektant-kontakty.html" onclick="toggleSiteMenu(false)">Kontakty</a>
+    <a href="projektant-profil.html" class="" onclick="toggleSiteMenu(false)">Profil</a>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <nav>
+      <a href="projektant-dashboard.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Přehled</a>
+      <a href="projektant-projekty.html"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" stroke-linecap="round" stroke-linejoin="round"/></svg>Projekty</a>
+      <a href="projektant-dokumenty.html" class="active"><svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12h6M9 16h6"/></svg>Dokumenty</a>
+      <a href="projektant-kalendar.html"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalendář</a>
+    </nav>
+  </aside>
+  <div class="main">
+    <div class="context-bar">
+      <a href="projektant-dashboard.html">Přehled</a>
+      <a href="projektant-projekty.html">Projekty</a>
+      <a href="projektant-dokumenty.html" class="active">Dokumenty</a>
+      <a href="projektant-kalendar.html">Kalendář</a>
+    </div>
+    <div class="wrap">
+      <a href="javascript:history.back()" class="back-btn">← Zpět</a>
+
+      <h1 class="pt">Dokumenty</h1>
+      <a class="btn" href="#" onclick="openDocModal(event)" style="margin-bottom:20px;">+ Přidat</a>
+
+      
+      <details class="folder-acc" name="dok-acc">
+        <summary>
+          <svg viewBox="0 0 24 24"><path d="M3 7a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>
+          <span class="fname">Výkresy</span>
+          <span class="fcount">4 soubory</span>
+        </summary>
+        <div class="fbody"><div class="file-row"><span class="file-tag">PDF</span><span class="file-name">Pudorys_1NP.pdf</span></div>
+          <div class="file-row"><span class="file-tag">PDF</span><span class="file-name">Pudorys_2NP.pdf</span></div>
+          <div class="file-row"><span class="file-tag">PDF</span><span class="file-name">Rezy.pdf</span></div>
+          <div class="file-row"><span class="file-tag">PDF</span><span class="file-name">Pohledy.pdf</span></div></div>
+      </details>
+      
+      <details class="folder-acc" name="dok-acc">
+        <summary>
+          <svg viewBox="0 0 24 24"><path d="M3 7a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>
+          <span class="fname">Projektová dokumentace</span>
+          <span class="fcount">3 soubory</span>
+        </summary>
+        <div class="fbody"><div class="file-row"><span class="file-tag">PDF</span><span class="file-name">Prujekt_RD_2026.pdf</span></div>
+          <div class="file-row"><span class="file-tag">PDF</span><span class="file-name">Situace.pdf</span></div>
+          <div class="file-row"><span class="file-tag">PDF</span><span class="file-name">Pozarne_bezpecnostni_reseni.pdf</span></div></div>
+      </details>
+      
+      <details class="folder-acc" name="dok-acc">
+        <summary>
+          <svg viewBox="0 0 24 24"><path d="M3 7a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>
+          <span class="fname">Technické zprávy</span>
+          <span class="fcount">1 soubor</span>
+        </summary>
+        <div class="fbody"><div class="file-row"><span class="file-tag">PDF</span><span class="file-name">Technicka_zprava_statika.pdf</span></div></div>
+      </details>
+      
+      <details class="folder-acc" name="dok-acc">
+        <summary>
+          <svg viewBox="0 0 24 24"><path d="M3 7a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>
+          <span class="fname">Komunikace se stavebníkem</span>
+          <span class="fcount">1 soubor</span>
+        </summary>
+        <div class="fbody"><div class="file-row"><span class="file-tag txt">TXT</span><span class="file-name">Poznamka_revize_koupelna.txt</span></div></div>
+      </details>
+
+<div class="modal-overlay" id="docModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDocModal()">✕</button>
+    <h3 id="docModalTitle">Přidat soubor</h3>
+    <div class="type-toggle" id="docTypeToggle">
+      <button class="active" data-type="soubor">Soubor</button>
+      <button data-type="poznamka">Poznámka</button>
+      <button data-type="slozka">Nová složka</button>
+    </div>
+    <div id="folderPickField" class="field">
+      <label>Složka</label>
+      <select>
+        <option selected>Výkresy</option>
+        <option>Projektová dokumentace</option>
+        <option>Technické zprávy</option>
+        <option>Komunikace se stavebníkem</option>
+      </select>
+    </div>
+    <div id="soubor-fields"><div class="upload-box">Klepnutím vyberte soubor ze zařízení</div></div>
+    <div id="poznamka-fields" style="display:none">
+      <div class="field"><label>Název poznámky</label><input type="text" placeholder="např. Poznámka k revizi"></div>
+      <div class="field"><label>Text</label><textarea rows="5" placeholder="Obsah poznámky…"></textarea></div>
+      <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted-2); margin-bottom:14px;">Uloží se jako textový dokument do vybrané složky.</div>
+    </div>
+    <div id="slozka-fields" style="display:none">
+      <div class="field"><label>Název složky</label><input type="text" placeholder="např. Rozpočet"></div>
+    </div>
+    <a class="btn" href="#" onclick="closeDocModal()">Uložit</a>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleSiteMenu(open){
+    document.getElementById('siteMenuOverlay').classList.toggle('open', open);
+  }
+  
+  function openDocModal(e){ e.preventDefault(); document.getElementById('docModal').classList.add('open'); }
+  function closeDocModal(){ document.getElementById('docModal').classList.remove('open'); }
+  const docTitles = { soubor: 'Přidat soubor', poznamka: 'Přidat poznámku', slozka: 'Nová složka' };
+  document.getElementById('docTypeToggle').addEventListener('click', function(e){
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    this.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const type = btn.dataset.type;
+    document.getElementById('docModalTitle').textContent = docTitles[type];
+    document.getElementById('soubor-fields').style.display = type === 'soubor' ? 'block' : 'none';
+    document.getElementById('poznamka-fields').style.display = type === 'poznamka' ? 'block' : 'none';
+    document.getElementById('slozka-fields').style.display = type === 'slozka' ? 'block' : 'none';
+    document.getElementById('folderPickField').style.display = type === 'slozka' ? 'none' : 'block';
+  });
+
+</script>
+</body>
+</html>
